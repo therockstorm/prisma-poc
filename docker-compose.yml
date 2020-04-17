@@ -1,0 +1,19 @@
+version: "2.4"
+
+services:
+  postgres:
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_MULTIPLE_DATABASES: "prisma-poc"
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+    healthcheck:
+      test: "res=$$(echo 'SELECT 1' | psql --host localhost --username $$POSTGRES_USER --dbname prisma-poc --quiet --no-align --tuples-only) && [$$res = '1' ] && exit 0 || exit 1"
+      interval: 5s
+      retries: 5
+      timeout: 5s
+    image: postgres:12-alpine
+    ports: [5432:5432]
+    volumes:
+      - ./scripts/pg-init:/docker-entrypoint-initdb.d
+      - ./data/postgres:/var/lib/postgresql/data/pgdata:delegated
